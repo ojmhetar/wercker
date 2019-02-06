@@ -260,21 +260,22 @@ func (p *Runner) CleanupOldBuilds() error {
 		return errors.Wrapf(err, "could not read directory %s when cleaning old builds", buildPath)
 	}
 
+	var files []os.FileInfo
 	// remove files (.DS_Store etc)
-	for i, f := range builds {
+	for _, f := range builds {
 		if !f.IsDir() {
-			builds = append(builds[:i], builds[i+1:]...)
+			files = append(files, f)
 		}
 	}
 
-	util.SortByModDate(builds)
+	util.SortByModDate(files)
 
-	if len(builds) < keepDirs {
+	if len(files) < keepDirs {
 		// nothing to do
 		return nil
 	}
 
-	cleanup := builds[keepDirs:]
+	cleanup := files[keepDirs:]
 
 	// only clean up builds older than 24h
 	oldFile := time.Now().Add(time.Hour * -24)
